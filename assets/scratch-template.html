@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scratch Prototype Template</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --surface: #141820;
+      --surface-muted: #1b212c;
+      --border: rgba(255, 255, 255, 0.1);
+      --fg: #f3f5f8;
+      --muted: #9aa4b2;
+      --accent: #3b82f6;
+      --danger: #ef4444;
+      --radius: 12px;
+      --glow: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .scratch-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .scratch-states {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .state-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .state-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    .canvas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      min-height: 360px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 0 var(--glow) rgba(59, 130, 246, 0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card h2 { font-size: 18px; font-weight: 600; }
+    .card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    .primary-btn {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: calc(var(--radius) * 0.65);
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tuner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: fit-content;
+    }
+
+    .tuner h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+    .control { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+    .control-row { display: flex; justify-content: space-between; color: var(--fg); }
+    .control input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+    .copy-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--fg);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .skeleton {
+      height: 14px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header class="scratch-bar">
+    <strong style="font-size: 14px;">Scratch Prototype</strong>
+    <div class="scratch-states" role="tablist" aria-label="UI States">
+      <button class="state-btn active" data-state="populated">Populated</button>
+      <button class="state-btn" data-state="empty">Empty</button>
+      <button class="state-btn" data-state="loading">Loading</button>
+      <button class="state-btn" data-state="error">Error</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="canvas" id="canvas"></section>
+
+    <aside class="tuner">
+      <h3>Parameter Tuner</h3>
+      <label class="control">
+        <span class="control-row"><span>--radius</span><span id="radius-val">12px</span></span>
+        <input id="radius-slider" type="range" min="0" max="28" value="12" />
+      </label>
+      <label class="control">
+        <span class="control-row"><span>--glow</span><span id="glow-val">24px</span></span>
+        <input id="glow-slider" type="range" min="0" max="64" value="24" />
+      </label>
+      <button class="copy-btn" id="copy-btn">Copy Tuned Values</button>
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const buttons = document.querySelectorAll(".state-btn");
+    const radiusSlider = document.getElementById("radius-slider");
+    const glowSlider = document.getElementById("glow-slider");
+    const radiusVal = document.getElementById("radius-val");
+    const glowVal = document.getElementById("glow-val");
+    const copyBtn = document.getElementById("copy-btn");
+
+    const states = {
+      populated: `
+        <div class="card">
+          <h2>Active Workspace</h2>
+          <p>Brand tokens and interactive states are wired cleanly. Use the tuner to dial in exact radius and glow values.</p>
+          <button class="primary-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Approve Prototype
+          </button>
+        </div>`,
+      empty: `
+        <div class="card">
+          <h2>No Components Yet</h2>
+          <p>Start by adding a section or switching back to the populated view to inspect layout hierarchy.</p>
+          <button class="primary-btn">Create First Block</button>
+        </div>`,
+      loading: `
+        <div class="card">
+          <div class="skeleton" style="width: 45%;"></div>
+          <div class="skeleton" style="width: 90%;"></div>
+          <div class="skeleton" style="width: 72%;"></div>
+        </div>`,
+      error: `
+        <div class="card" style="border-color: var(--danger);">
+          <h2 style="color: var(--danger);">Failed to Load Preview</h2>
+          <p>Check token definitions or retry rendering this scratch state.</p>
+          <button class="primary-btn" style="background: var(--danger);">Retry</button>
+        </div>`
+    };
+
+    function renderState(name) {
+      canvas.innerHTML = states[name] || states.populated;
+      buttons.forEach((btn) => btn.classList.toggle("active", btn.dataset.state === name));
+    }
+
+    buttons.forEach((btn) => btn.addEventListener("click", () => renderState(btn.dataset.state)));
+
+    function updateTokens() {
+      const r = radiusSlider.value + "px";
+      const g = glowSlider.value + "px";
+      document.documentElement.style.setProperty("--radius", r);
+      document.documentElement.style.setProperty("--glow", g);
+      radiusVal.textContent = r;
+      glowVal.textContent = g;
+    }
+
+    radiusSlider.addEventListener("input", updateTokens);
+    glowSlider.addEventListener("input", updateTokens);
+
+    copyBtn.addEventListener("click", async () => {
+      const text = `--radius: ${radiusSlider.value}px;\n--glow: ${glowSlider.value}px;`;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => { copyBtn.textContent = "Copy Tuned Values"; }, 1500);
+      } catch {
+        copyBtn.textContent = text;
+      }
+    });
+
+    renderState("populated");
+  </script>
+</body>
+</html>
